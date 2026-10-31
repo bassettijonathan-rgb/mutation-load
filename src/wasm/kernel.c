@@ -1,7 +1,8 @@
 // The breeding loop of src/sim/engine.js (function breed), in C for
 // WebAssembly. It must give exactly the same results as the JavaScript
 // version: the same random draws in the same order and the same floating
-// point operations in the same order. test/unit/kernel.test.js checks it.
+// point operations in the same order. test/unit/engine.test.js and
+// test/long/runs.test.js check it.
 //
 // Build: node tools/build-wasm.mjs (needs clang with the wasm32 target).
 
@@ -13,14 +14,15 @@ __attribute__((import_module("env"), import_name("log"))) double js_log(double);
 // set once by setup()
 static i32 W, C, WPC, L, POOL, CAP, MONOTONE;
 static double EPS, HITS_D, E_HITS_D, HITS_R, E_HITS_R;
-static i32 *POOLP, *FEM, *MAL, *MUT_G, *PICK, *OR_M, *AND_M;
+static i32 *POOLP, *FEM, *MAL, *MUT_G, *PICK, *OR_M, *AND_M, *ALIAS;
+static u32 *THR; // fathers' alias table (selection on males)
 static unsigned char *MUT_K;
 static double *C1, *C2, *OUT;
 static u32 *RNG; // sfc32 state a, b, c, d
 
 void setup(i32 w, i32 c, i32 wpc, i32 l, i32 pool, i32 cap, i32 monotone, double eps, double hitsD,
            double eHitsD, double hitsR, double eHitsR, i32 poolP, i32 fem, i32 mal, i32 mutG, i32 mutK,
-           i32 pick, i32 c1, i32 c2, i32 orM, i32 andM, i32 out, i32 rng) {
+           i32 pick, i32 c1, i32 c2, i32 orM, i32 andM, i32 out, i32 rng, i32 thr, i32 alias) {
   W = w;
   C = c;
   WPC = wpc;
@@ -45,6 +47,8 @@ void setup(i32 w, i32 c, i32 wpc, i32 l, i32 pool, i32 cap, i32 monotone, double
   AND_M = (i32 *)andM;
   OUT = (double *)out;
   RNG = (u32 *)rng;
+  THR = (u32 *)thr;
+  ALIAS = (i32 *)alias;
 }
 
 static u32 ra, rb, rc, rd;
@@ -68,7 +72,8 @@ static inline i32 next_int(i32 n) {
 
 static inline i32 popcnt(u32 x) { return __builtin_popcount(x); }
 
-void breed(i32 genoP, i32 nextP, i32 dmgP, i32 cntP, i32 sexP, double conceived, i32 nF, i32 nM, i32 asex) {
+void breed(i32 genoP, i32 nextP, i32 dmgP, i32 cntP, i32 sexP, double conceived, i32 nF, i32 nM, i32 asex,
+           i32 maleSel) {
   i32 *geno = (i32 *)genoP;
   i32 *next = (i32 *)nextP;
   double *nextDmg = (double *)dmgP;
@@ -90,7 +95,12 @@ void breed(i32 genoP, i32 nextP, i32 dmgP, i32 cntP, i32 sexP, double conceived,
     const i32 d0 = survived * W2;
     const i32 d1 = d0 + W;
     const i32 ma = FEM[next_int(nF)] * W2;
-    const i32 pa = asex ? ma : MAL[next_int(nM)] * W2;
+    i32 pa = ma;
+    if (!asex) {
+      i32 k = next_int(nM);
+      if (maleSel && next_u32() >= THR[k]) k = ALIAS[k];
+      pa = MAL[k] * W2;
+    }
     if (!asex) {
       for (i32 i = 0; i < 2 * C; i += 4) {
         const u32 r = next_u32();

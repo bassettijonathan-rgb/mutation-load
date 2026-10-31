@@ -36,6 +36,8 @@ test('the WebAssembly and JavaScript kernels give exactly the same run', () => {
     { K: 200, mode: 'asex', U: 0.5 },
     { K: 200, epistasis: 1.5, repair: 0.5 },
     { K: 150, competition: 2, h: 0.5 },
+    { K: 200, males: 2, epistasis: 0.5 },
+    { K: 150, males: 1, competition: 1, U: 2 },
     { K: 150, dfe: 'strong', U: 2, F: 20, crossovers: 3 },
   ];
   for (const params of cases) {
@@ -101,6 +103,37 @@ test('a population that cannot pay dies out and stays dead', () => {
   assert.equal(e.gen, g);
 });
 
+test('selection on males: the alias table draws fathers in proportion to w^m', () => {
+  const e = new Engine({ seed: 'm', params: { K: 200, males: 2, U: 2, dfe: 'strong' } });
+  e.run(100);
+  const nM = e.sex.subarray(0, e.N).reduce((a, x) => a + x, 0);
+  let k = 0;
+  for (let i = 0; i < e.N; i++) if (e.sex[i] === 1) e.mal[k++] = i;
+  e.buildFathers(nM);
+  // the chance of each male under the alias method, against w^m
+  const got = new Float64Array(nM);
+  for (let j = 0; j < nM; j++) {
+    const keep = e.thr[j] / 4294967296;
+    got[j] += keep / nM;
+    got[e.alias[j]] += (1 - keep) / nM;
+  }
+  const want = Array.from({ length: nM }, (_, j) => Math.exp(-2 * e.dmg[e.mal[j]]));
+  const total = want.reduce((a, b) => a + b, 0);
+  for (let j = 0; j < nM; j++) assert.ok(Math.abs(got[j] - want[j] / total) < 1e-9, `male ${j}`);
+  assert.ok(Math.max(...want) / Math.min(...want) > 1.5, 'the males differ');
+});
+
+test('selection on males leaves the default run untouched when off and lowers the damage when on', () => {
+  const plain = new Engine({ seed: 'm2', params: { K: 300, dfe: 'strong' } });
+  const off = new Engine({ seed: 'm2', params: { K: 300, dfe: 'strong', males: 0 } });
+  const on = new Engine({ seed: 'm2', params: { K: 300, dfe: 'strong', males: 4 } });
+  plain.run(600);
+  off.run(600);
+  on.run(600);
+  assert.equal(plain.hash(), off.hash());
+  assert.ok(on.last.meanN < 0.7 * plain.last.meanN, `${on.last.meanN} vs ${plain.last.meanN}`);
+});
+
 test('settings can change during a run', () => {
   const e = new Engine({ seed: 'f', params: { K: 200 } });
   e.run(20);
@@ -115,6 +148,9 @@ test('settings can change during a run', () => {
   assert.ok([...e.sex.subarray(0, e.N)].some((x) => x === 1), 'clones get two sexes back');
   e.run(5);
   assert.ok(e.N > 0 && !e.extinct);
+  assert.equal(e.setParams({ males: 1.5 }), true, 'selection on males is live');
+  e.run(5);
+  assert.ok(e.N > 0 && !e.extinct);
   assert.equal(e.setParams({ U: 2 }), false, 'no change, no entry');
-  assert.equal(e.changes.length, 3);
+  assert.equal(e.changes.length, 4);
 });

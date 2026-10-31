@@ -6,7 +6,7 @@
 import { Engine, CLASSES, classOf, dfeOf } from '../sim/engine.js';
 import { DFE_PRESETS, familyEffects } from '../sim/dfe.js';
 import { DEFAULTS } from '../sim/params.js';
-import { copiesAtBalance, genomeForecast, haighN0, loadSurvival, pfix, synergyBalance, wright } from '../sim/theory.js';
+import { copiesAtBalance, genomeForecast, haighN0, loadSurvival, maleSurvival, pfix, synergyBalance, wright } from '../sim/theory.js';
 
 const pct = (x, d = 1) => `${(100 * x).toFixed(d)} %`;
 const num = (x, d = 0) =>
@@ -158,6 +158,14 @@ export const EXPERIMENTS = [
     secs: 14, // measured on a 2.1 GHz server core
     label: 'Severe genes, damage that hurts more and more (synergy 2)',
     params: { dfe: 'strong', epistasis: 2 },
+    gens: 3000,
+    track: () => averager(1500),
+  },
+  {
+    id: 'males',
+    secs: 13, // measured on a 2.1 GHz server core
+    label: 'Severe genes, healthier males father more young (selection on males 2)',
+    params: { dfe: 'strong', males: 2 },
     gens: 3000,
     track: () => averager(1500),
   },
@@ -353,6 +361,19 @@ export const CHECKS = [
     tolerance: '±2.5 points',
     why: 'With synergy each death removes more broken copies than average, so fewer deaths are needed: Kimura & Maruyama’s balance for a Poisson number of mutations gives 46.9 %, above e^−U = 36.8 %.',
     source: 'Kimura & Maruyama 1966; Kondrashov 1988; Charlesworth 1990, Genet. Res. 55:199',
+  },
+  {
+    id: 'males',
+    title: 'Selection on males lowers the price to e^−{U/(1 + m/2)}',
+    uses: ['males'],
+    predict: () => maleSurvival(1, 2),
+    measure: (r) => r.males.survival,
+    pass: (sim, pred) => Math.abs(sim - pred) <= 0.025,
+    show: pct,
+    detail: (r) => `broken copies per genome ${num(r.males.copies, 1)}, predicted U/(h·s·(1 + m/2)) = ${num(copiesAtBalance(1, 0.25, sOf('strong')) / 2, 1)}`,
+    tolerance: '±2.5 points',
+    why: 'With m = 2 a male’s damage costs him twice as much in matings as in survival. A broken copy then leaves the population through its male carriers’ lost matings as well as through deaths, so balance needs only half as many broken copies and the young pay only half the deaths: e^−0.5 = 60.7 % survive instead of 36.8 %. The lost matings cost nothing, because other males father those young.',
+    source: 'Agrawal 2001, Nature 411:692; Siller 2001, Nature 411:689; Whitlock & Agrawal 2009, Evolution 63:569',
   },
   {
     id: 'genome',

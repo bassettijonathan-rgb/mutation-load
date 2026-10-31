@@ -1,6 +1,6 @@
 {
-  "passed": 14,
-  "total": 14,
+  "passed": 15,
+  "total": 15,
   "checks": [
     {
       "id": "load",
@@ -157,6 +157,20 @@
       "pass": true,
       "why": "With synergy each death removes more broken copies than average, so fewer deaths are needed: Kimura & Maruyama’s balance for a Poisson number of mutations gives 46.9 %, above e^−U = 36.8 %.",
       "source": "Kimura & Maruyama 1966; Kondrashov 1988; Charlesworth 1990, Genet. Res. 55:199"
+    },
+    {
+      "id": "males",
+      "title": "Selection on males lowers the price to e^−{U/(1 + m/2)}",
+      "runs": [
+        "Severe genes, healthier males father more young (selection on males 2)"
+      ],
+      "predicted": "60.7 %",
+      "simulated": "60.4 %",
+      "detail": "broken copies per genome 39.5, predicted U/(h·s·(1 + m/2)) = 40.0",
+      "tolerance": "±2.5 points",
+      "pass": true,
+      "why": "With m = 2 a male’s damage costs him twice as much in matings as in survival. A broken copy then leaves the population through its male carriers’ lost matings as well as through deaths, so balance needs only half as many broken copies and the young pay only half the deaths: e^−0.5 = 60.7 % survive instead of 36.8 %. The lost matings cost nothing, because other males father those young.",
+      "source": "Agrawal 2001, Nature 411:692; Siller 2001, Nature 411:689; Whitlock & Agrawal 2009, Evolution 63:569"
     },
     {
       "id": "genome",

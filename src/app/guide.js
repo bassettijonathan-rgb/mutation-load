@@ -143,7 +143,7 @@ export const CHAPTERS = [
     title: 'When mutations do win',
     body: [
       'The price is paid in young, so it must be affordable. With 10 young per mother, 2 must survive; e^−U falls below that once U is above about 1.6 for severe genes. For our mixed genome the limit is higher, about U = 2.5, because many hits land on genes that hardly matter.',
-      'This is the [load paradox|paradox]. Human estimates of U run to two or more damaging mutations per birth, and our ancestors had few children. Several things help: damage that hurts more and more ([synergy]), so each death removes several mutations at once; young that compete for places ([soft selection|competition]), so damage decides who wins rather than how many survive; and the fact that many hits land on genes that matter little.',
+      'That is a problem, because human estimates of [U] start at about two damaging mutations per birth, some run higher, and our ancestors had only a handful of children each. This is the [load paradox|paradox]. The next chapter shows the ways out.',
     ],
     predict: {
       q: 'Four new damaging mutations per newborn (U = 4), still 10 young per mother. What happens?',
@@ -153,10 +153,37 @@ export const CHAPTERS = [
         { text: 'Selection gets stronger and keeps up' },
       ],
       explain:
-        'It dies out within about 30,000 years: too few young survive their genes to replace the adults. In the Lab, the scenarios with U = 3 show three ways out: more young per mother, synergy, or competition for places.',
+        'It dies out within about 30,000 years: too few young survive their genes to replace the adults. Species with many more young per mother can pay (the Lab’s “Many young”); the next chapter shows how the rest of us get away with it.',
     },
     show: { steps: [{ params: { U: 4 }, gen: 1500 }] },
     look: 'Survival drops below the red line and the population collapses. The dashed e^−U line (1.8 %) is far below; the real survival stays above it only because many hits fall on genes that hardly matter.',
+  },
+  {
+    id: 'escape',
+    title: 'Three ways out of the paradox',
+    body: [
+      'So far every death caused by damage was an extra death, on top of everything else that kills the young, and a damaged father had as many young as any other. Real populations differ in three ways, and each lets selection remove damage more cheaply.',
+      '[Competition for places|competition]. Most young die anyway, of hunger, predators or a lack of territory, because the habitat cannot hold them all. If the healthier ones tend to win the places, selection works through deaths that would happen anyway. Damage then counts against the neighbours, not against a perfect genome nobody has (Wallace 1975; Lesecque, Keightley and Eyre-Walker 2012).',
+      '[Synergy]. If damage hurts more and more as it piles up, the young that die are the ones carrying the most, so each death removes more broken copies (Kondrashov 1988).',
+      '[Selection on males|males]. If healthier males father more young, a damaged male’s lost matings simply go to other males, and the young are born anyway. Damage leaves through the males at no cost in young. For genes selection can see, the price falls from e^−U to e^−{U/(1 + m/2)}, m being how much more a male’s damage costs him in matings than in survival (Agrawal 2001; Whitlock and Agrawal 2009).',
+    ],
+    predict: {
+      q: 'U = 5, still 10 young per mother. With the plain rules it dies out within about 14,000 years, and it still dies out with any one of the three at strength 1. Now switch all three on at once, each at strength 1. What happens?',
+      options: [
+        { text: 'It still dies out, just later' },
+        { text: 'It lives, with every place filled', right: true },
+        { text: 'It lives on, but with only a few hundred adults' },
+      ],
+      explain:
+        'It lives, with all 2,000 places filled: about a third of the young survive their genes, well above the 20 % needed and far above e^−5 = 0.7 %. The escapes add up, because each makes every death or lost mating remove more damage. In this model it was still going strong after half a million years.',
+    },
+    show: {
+      steps: [
+        { params: { U: 5 }, gen: 1000, ghost: 'plain rules' },
+        { params: { U: 5, competition: 1, epistasis: 1, males: 1 }, gen: 3000 },
+      ],
+    },
+    look: 'Grey is U = 5 under the plain rules: survival falls below the red line within a few hundred generations and the adults vanish. With all three escapes survival settles near a third, far above the dashed e^−U line, and every place stays filled. In the Lab, try each escape alone at U = 5, or one at a time at U = 3.',
   },
   {
     id: 'answer',
@@ -167,6 +194,7 @@ export const CHAPTERS = [
       '2. Damage too slight for selection to see does pile up, but by definition it costs little, and it stops when those genes are broken in everyone. Genomes really are littered with such broken genes.',
       '3. Large populations keep the drift barrier low, so only genes that truly do not matter rot. Small populations lose more and can melt down.',
       '4. Sex rebuilds clean genomes; without it, Muller’s ratchet wins.',
+      '5. Real populations pay less than e^−U: competition for places, synergy and selection on males let each death or lost mating remove more damage.',
       'Mutations do win when the price is more than the young can pay: too many new ones per birth, too few adults, or no sex.',
     ],
     look: 'Everything here is a model with simplifications (the README lists them). The Validation tab checks the simulation against the theory behind each claim.',
@@ -194,8 +222,9 @@ export const GLOSSARY = {
   ratchet: ['Muller’s ratchet', 'In populations without sex, the class of genomes with the fewest broken copies is lost by chance and cannot be rebuilt; each loss is a click of the ratchet.'],
   synergy: ['Synergy (epistasis)', 'Damage that hurts more and more as it adds up: log fitness = −D − synergy·D²/2. Then each death removes more broken copies than average, which lowers the price.'],
   competition: ['Soft selection', 'When more young survive than there are places, the healthier win places more often. Damage then decides who gets a place, not how many young survive.'],
+  males: ['Selection on males', 'Healthier males father more young, through female choice or contests between males. Here a male’s chance of fathering each young goes with his own survival fitness raised to the power m: with m = 1, a male whose damage cut his survival by 10 % also wins 10 % fewer matings. His lost matings go to other males, so no young go unborn.'],
   meltdown: ['Mutational meltdown', 'A small population collects damage by drift, makes too few surviving young, shrinks, drifts harder, and dies out.'],
-  paradox: ['Load paradox', 'If humans really receive two or more damaging mutations per birth, e^−U says most conceptions should fail. How our ancestors coped is still debated.'],
+  paradox: ['Load paradox', 'If humans really receive two or more damaging mutations per birth, e^−U says most conceptions should fail. Competition for places, synergy and selection on males are the main proposed ways out; how much each matters is still debated.'],
   wright: ['Wright’s distribution', 'Sewall Wright’s formula (1937) for how common a broken copy is, on average, under mutation, repair, selection and drift. Summed over genes it forecasts the whole genome.'],
   n: ['N, population size', 'The number of adults, here the 2,000 places. Drift is strong when 4·N·h·s is small.'],
   generation: ['Generation', 'One round of birth, survival and reproduction. With 25 years per generation, a million years is 40,000 generations.'],
@@ -213,7 +242,7 @@ export function linkify(text) {
       if (!GLOSSARY[k]) return shown;
       return `<button type="button" class="term" data-term="${k}">${shown}</button>`;
     })
-    .replace(/e\^−([A-Za-z0-9]+(?:\.[0-9]+)?)/g, 'e<sup>−$1</sup>');
+    .replace(/e\^−(?:\{([^}]+)\}|([A-Za-z0-9]+(?:\.[0-9]+)?))/g, (m, braced, plain) => `e<sup>−${braced ?? plain}</sup>`);
 }
 
 // What each readout means, for the explanation sheet.
@@ -340,6 +369,11 @@ export function narrate(s) {
   }
   if (L.gen < 150) {
     return `Damage is building up: each newborn inherits its parents’ broken copies and adds new ones. Average ${fmt.count(L.meanN)} broken copies per genome; ${survival} of the young survive their genes.`;
+  }
+  const escapes = [p.competition > 0 && 'competition for places', p.epistasis > 0 && 'synergy', p.males > 0 && 'selection on males'].filter(Boolean);
+  if (escapes.length && p.mode !== 'asex') {
+    const named = escapes.length > 1 ? `${escapes.slice(0, -1).join(', ')} and ${escapes[escapes.length - 1]}` : escapes[0];
+    return `${named[0].toUpperCase()}${named.slice(1)} ${escapes.length > 1 ? 'let' : 'lets'} damage leave more cheaply: ${survival} of the young survive their genes, above the plain e<sup>−U</sup> = ${fmt.pct(s.theory.haldane)}. ${fmt.int(L.brokenAll)} genes are broken in everyone; ${yrs} so far.`;
   }
   if (L.brokenAll === 0) {
     return `Balance: about as many broken copies leave each generation, with the young that die, as mutation adds. ${survival} of the young survive their genes, close to Haldane and Muller’s e<sup>−U</sup> = ${fmt.pct(s.theory.haldane, 0)}.`;
