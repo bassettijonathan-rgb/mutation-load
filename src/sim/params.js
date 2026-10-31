@@ -16,6 +16,7 @@ export const DEFAULTS = {
   mode: 'sex', // 'sex' | 'nocross' (sex without crossing over) | 'asex' (clones)
   epistasis: 0, // synergy: log fitness = -D - epistasis·D²/2
   competition: 0, // 0: places go by luck; >0: healthier young win places more often
+  males: 0, // selection on males: 0 random fathers; >0 healthier males father more young
   years: 25, // years per generation (only for the clock)
 };
 
@@ -32,6 +33,7 @@ export const RANGES = {
   crossovers: [0, 4],
   epistasis: [0, 10],
   competition: [0, 10],
+  males: [0, 10],
   years: [1, 40],
 };
 

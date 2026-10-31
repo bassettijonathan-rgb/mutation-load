@@ -4,7 +4,8 @@
 //
 // One generation:
 //   1. Mating. Each female conceives a Poisson number of young (mean F);
-//      each young has a father drawn at random among the males.
+//      each young has a father drawn at random among the males (or, with
+//      selection on males on, more often a healthier one).
 //   2. Meiosis. Each parent passes one recombinant copy of every
 //      chromosome; new mutations break intact genes (and, more rarely,
 //      repair broken ones).
@@ -97,6 +98,9 @@ function breed(e, conceived, nF, nM, asex) {
   const c2 = e.c2;
   const fem = e.fem;
   const mal = e.mal;
+  const thr = e.thr;
+  const alias = e.alias;
+  const maleSel = p.males > 0 && !asex;
   const geno = e.geno;
   const next = e.next;
   const pool = e.pool;
@@ -129,7 +133,14 @@ function breed(e, conceived, nF, nM, asex) {
     const E = -Math.log(1 - rng.float());
     const limit = eps > 0 ? (Math.sqrt(1 + 2 * eps * E) - 1) / eps : E;
     const ma = fem[rng.int(nF)] * W2;
-    const pa = asex ? ma : mal[rng.int(nM)] * W2;
+    let pa = ma;
+    if (!asex) {
+      // the father: one male at random, or (selection on males) the alias
+      // draw that makes healthier males likelier
+      let k = rng.int(nM);
+      if (maleSel && rng.u32() >= thr[k]) k = alias[k];
+      pa = mal[k] * W2;
+    }
     if (!asex) {
       for (let i = 0; i < 2 * C; i += 4) {
         const r = rng.u32();
@@ -368,6 +379,8 @@ export class Engine {
       ['c2', Float64Array, W], // log(1 - s): both copies broken
       ['fem', Int32Array, p.K],
       ['mal', Int32Array, p.K],
+      ['thr', Uint32Array, p.K], // fathers' alias table: keep threshold
+      ['alias', Int32Array, p.K], // ... and the alternative
       ['dmgA', Float64Array, cap], // D: damage in log-fitness units
       ['dmgB', Float64Array, cap],
       ['cntA', Int32Array, cap], // broken gene copies
@@ -418,8 +431,10 @@ export class Engine {
     this.kernel = this.wasm ? 'wasm' : 'js';
     this.half = 0; // which buffers hold the adults: A (0) or B (1)
     this.bindHalves();
-    for (const k of ['pool', 'c1', 'c2', 'fem', 'mal', 'orMask', 'andMask', 'mutGene', 'mutKind', 'pick', 'out']) this[k] = view[k];
+    for (const k of ['pool', 'c1', 'c2', 'fem', 'mal', 'thr', 'alias', 'orMask', 'andMask', 'mutGene', 'mutKind', 'pick', 'out']) this[k] = view[k];
     this.key = new Float64Array(cap);
+    this.fatherW = new Float64Array(p.K);
+    this.fatherStack = new Int32Array(2 * p.K);
     this.capNext = p.competition > 0 ? cap : p.K;
     this.poolReady = false;
     this.changes = []; // settings changed during the run: {gen, patch}
@@ -515,6 +530,8 @@ export class Engine {
       at.andMask,
       at.out,
       at.rngState,
+      at.thr,
+      at.alias,
     );
   }
 
@@ -546,6 +563,8 @@ export class Engine {
       return;
     }
 
+    if (!asex && p.males > 0) this.buildFathers(nM);
+
     // conceptions: Poisson per female; an asexual mother has half as many,
     // so both kinds of population have the same births per adult
     const conceived = rng.poisson((asex ? 0.5 : 1) * p.F * nF);
@@ -574,6 +593,7 @@ export class Engine {
         nF,
         nM,
         asex ? 1 : 0,
+        !asex && p.males > 0 ? 1 : 0,
       );
       r.a = st[0] | 0;
       r.b = st[1] | 0;
@@ -602,6 +622,52 @@ export class Engine {
     if (kept === 0) this.extinct = true;
     this.stats({ conceived, tried, survived });
     this.record(false);
+  }
+
+  // Selection on males: a young's father is drawn with probability in
+  // proportion to w^males, where w is the male's own chance of having
+  // survived his genes. With males = 1, a male whose damage cut his survival
+  // by 10 % also wins 10 % fewer matings; with 2, about 20 % fewer. The draw
+  // uses Walker's alias method: a male at random, then a second draw keeps
+  // him (below his threshold) or takes his alias instead.
+  buildFathers(nM) {
+    const p = this.params;
+    const { mal, dmg, thr, alias } = this;
+    const wt = this.fatherW;
+    const beta = p.males;
+    const eps = p.epistasis;
+    let top = -Infinity;
+    for (let k = 0; k < nM; k++) {
+      const D = dmg[mal[k]];
+      const logw = eps > 0 && D > 0 ? -D - 0.5 * eps * D * D : -D;
+      wt[k] = logw;
+      if (logw > top) top = logw;
+    }
+    let sum = 0;
+    for (let k = 0; k < nM; k++) {
+      wt[k] = Math.exp(beta * (wt[k] - top));
+      sum += wt[k];
+    }
+    const st = this.fatherStack; // small ones from the bottom, large from the top
+    let ns = 0;
+    let nl = 0;
+    const top0 = st.length - 1;
+    for (let k = 0; k < nM; k++) {
+      wt[k] = (wt[k] * nM) / sum;
+      alias[k] = k;
+      thr[k] = 4294967295;
+      if (wt[k] < 1) st[ns++] = k;
+      else st[top0 - nl++] = k;
+    }
+    while (ns > 0 && nl > 0) {
+      const s = st[--ns];
+      const l = st[top0 - --nl];
+      thr[s] = Math.min(4294967295, Math.floor(wt[s] * 4294967296));
+      alias[s] = l;
+      wt[l] = wt[l] + wt[s] - 1;
+      if (wt[l] < 1) st[ns++] = l;
+      else st[top0 - nl++] = l;
+    }
   }
 
   // Competition for places among more survivors than places: each draws a
@@ -760,7 +826,7 @@ export class Engine {
   // Settings that can change during a run. The rest (places, genes,
   // chromosomes, effects) need a fresh start.
   setParams(patch) {
-    const live = ['U', 'repair', 'F', 'h', 'epistasis', 'competition', 'crossovers', 'mode', 'years'];
+    const live = ['U', 'repair', 'F', 'h', 'epistasis', 'competition', 'males', 'crossovers', 'mode', 'years'];
     const clean = {};
     for (const k of live) if (k in patch && patch[k] !== this.params[k]) clean[k] = patch[k];
     if (!Object.keys(clean).length) return false;

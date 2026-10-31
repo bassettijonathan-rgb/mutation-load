@@ -16,6 +16,9 @@
 //                           loses one class at a time.
 //   synergyBalance(...)     the balance when damage hurts more and more
 //                           (Kimura & Maruyama 1966, Charlesworth 1990).
+//   maleSurvival(U, m)      the price when healthier males also father more
+//                           young: e^(-U / (1 + m/2)) (after Agrawal 2001,
+//                           Whitlock & Agrawal 2009).
 
 export function loadSurvival(U) {
   return Math.exp(-U);
@@ -23,6 +26,22 @@ export function loadSurvival(U) {
 
 export function copiesAtBalance(U, h, s) {
   return U / (h * s);
+}
+
+// Selection on males of strength m: a male's matings are multiplied by
+// w^m, w being his survival fitness. A broken copy that costs h·s of
+// survival then also costs its male carriers about m·h·s of their matings,
+// and since half of every young's genes come from its father, it leaves the
+// population at h·s·(1 + m/2) per generation instead of h·s. Balance needs
+// only 1 / (1 + m/2) as many broken copies, so the young pay only that share
+// of the deaths: the rest of the removal happens through males' lost
+// matings, which other males take up, so no young go unborn.
+export function maleSurvival(U, m) {
+  return Math.exp(-U / (1 + m / 2));
+}
+
+export function maleCopies(U, h, s, m) {
+  return U / (h * s * (1 + m / 2));
 }
 
 // The share of the young that must survive for the population to replace

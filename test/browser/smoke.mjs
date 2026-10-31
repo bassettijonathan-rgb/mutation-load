@@ -147,6 +147,25 @@ try {
     if (/Extinct/.test(said)) ok(`${vp.name}: the narrator says what happened`);
     else fail(`${vp.name}: narrator says "${said}"`);
 
+    // the three escapes from the load paradox, together
+    await frame.locator('[data-scenario="escapes"]').click();
+    await app
+      .waitForFunction(
+        () => {
+          const s = window.__ml.state;
+          return s.params.U === 5 && s.params.males === 1 && s.params.competition === 1 && s.params.epistasis === 1 && s.last?.gen >= 200;
+        },
+        null,
+        { timeout: 60000 },
+      )
+      .then(
+        () => ok(`${vp.name}: the “All three escapes” scenario runs`),
+        () => fail(`${vp.name}: the “All three escapes” scenario did not run`),
+      );
+    const said2 = await frame.locator('#narrator').textContent();
+    if (/leave more cheaply/.test(said2)) ok(`${vp.name}: the narrator explains the escapes`);
+    else fail(`${vp.name}: narrator says "${said2}" with the escapes on`);
+
     if (errors.length) for (const e of errors) fail(`${vp.name}: ${e}`);
     else ok(`${vp.name}: no errors in the console`);
     await ctx.close();

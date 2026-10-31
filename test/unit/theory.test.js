@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { wright, pfix, synergyBalance, genomeForecast, copiesAtBalance, loadSurvival, persists, haighN0 } from '../../src/sim/theory.js';
+import { wright, pfix, synergyBalance, genomeForecast, copiesAtBalance, loadSurvival, persists, haighN0, maleSurvival, maleCopies } from '../../src/sim/theory.js';
 import { gammaCdf, familyEffects, DFE_PRESETS } from '../../src/sim/dfe.js';
 import { classOf } from '../../src/sim/engine.js';
 
@@ -32,6 +32,12 @@ test('Haldane–Muller and friends', () => {
   assert.equal(persists(10, 1), true);
   assert.equal(persists(10, 2), false);
   close(haighN0(2000, 0.1, 0.25, 0.05), 2000 * Math.exp(-8), 1e-9);
+});
+
+test('selection on males divides the price exponent by 1 + m/2', () => {
+  close(maleSurvival(1, 0), Math.exp(-1), 1e-12);
+  close(maleSurvival(1, 2), Math.exp(-0.5), 1e-12);
+  close(maleCopies(1, 0.25, 0.05, 2), 40, 1e-9);
 });
 
 test('synergy: no synergy gives e^-U, synergy raises survival', () => {

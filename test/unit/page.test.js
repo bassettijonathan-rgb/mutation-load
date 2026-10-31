@@ -32,6 +32,7 @@ test('links become buttons and text is escaped', () => {
   assert.match(html, /data-term="drift">drift</);
   assert.match(html, /data-term="drift barrier">the barrier</);
   assert.match(html, /e<sup>−U<\/sup>\.$/);
+  assert.match(linkify('e^−{U/(1 + m/2)} and e^−0.5'), /^e<sup>−U\/\(1 \+ m\/2\)<\/sup> and e<sup>−0\.5<\/sup>$/);
 });
 
 test('numbers are written for people', () => {
@@ -63,6 +64,11 @@ test('every readout, the narrator and the gene cards work at every stage', () =>
     (() => {
       const e = new Engine({ seed: 'g', params: { K: 60, dfe: 'strong', U: 5, F: 4 } });
       e.run(500);
+      return e;
+    })(),
+    (() => {
+      const e = new Engine({ seed: 'g', params: { K: 100, U: 2, competition: 1, epistasis: 1, males: 1 } });
+      e.run(300);
       return e;
     })(),
   ];

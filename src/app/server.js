@@ -17,7 +17,7 @@ export const SPEEDS = [4, 40, 400, Infinity];
 // Long-run forecast for the current settings, where the theory applies.
 function forecastOf(engine) {
   const p = engine.params;
-  const valid = p.mode === 'sex' && p.epistasis === 0 && p.competition === 0;
+  const valid = p.mode === 'sex' && p.epistasis === 0 && p.competition === 0 && p.males === 0;
   const f = genomeForecast({ N: p.K, U: p.U, repair: p.repair, h: p.h, effects: Array.from(engine.sFam), classOf });
   return {
     valid,

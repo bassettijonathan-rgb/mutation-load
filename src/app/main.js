@@ -57,6 +57,8 @@ const SCENARIOS = [
   { id: 'fish', title: 'Many young', text: 'U = 3 again, but 30 young per mother: now it can pay.', params: { U: 3, F: 30 } },
   { id: 'synergy', title: 'Synergy', text: 'U = 3 with damage that hurts more and more as it adds up: it lives.', params: { U: 3, epistasis: 2 } },
   { id: 'soft', title: 'Competition for places', text: 'U = 3, but up to twice as many young survive as there are places and the healthier win them more often: it lives.', params: { U: 3, competition: 1 } },
+  { id: 'males', title: 'Selection on males', text: 'U = 3, but healthier males father more young. A damaged male’s lost matings go to other males, so no young go unborn: it lives.', params: { U: 3, males: 1 } },
+  { id: 'escapes', title: 'All three escapes', text: 'U = 5: competition, synergy and selection on males, each at strength 1. Any one alone dies out; all three together fill every place.', params: { U: 5, competition: 1, epistasis: 1, males: 1 } },
 ];
 
 const DFE_OPTIONS = [
@@ -87,8 +89,9 @@ const SETTINGS = [
   { key: 'repair', label: 'Repairs, as a share of damage', min: 0, max: 1, step: 0.05, live: true, show: (v) => fmt.fixed(v, 2) },
   { key: 'mode', label: 'Reproduction', type: 'select', options: MODES, live: true },
   { key: 'crossovers', label: 'Crossovers per chromosome', min: 0, max: 4, step: 0.1, live: true, show: (v) => fmt.fixed(v, 1) },
-  { key: 'epistasis', label: 'Synergy (damage hurts more and more)', min: 0, max: 10, step: 0.1, live: true, show: (v) => fmt.fixed(v, 1) },
+  { key: 'epistasis', label: 'Synergy (damage hurts more and more)', min: 0, max: 10, step: 0.1, live: true, show: (v) => (v > 0 ? fmt.fixed(v, 1) : 'off'), note: 'Above 0: each broken copy costs more than the one before.' },
   { key: 'competition', label: 'Competition for places', min: 0, max: 10, step: 0.1, live: true, show: (v) => (v > 0 ? fmt.fixed(v, 1) : 'off'), note: 'Above 0: up to twice as many young survive as there are places, and the healthier win them more often.' },
+  { key: 'males', label: 'Selection on males', min: 0, max: 10, step: 0.1, live: true, show: (v) => (v > 0 ? fmt.fixed(v, 1) : 'off'), note: (v) => (v > 0 ? `A male whose damage cuts his survival by 10 % wins ${fmt.pct(1 - 0.9 ** v, 0)} fewer matings.` : 'Off: every young’s father is a male drawn at random.') },
   { key: 'genes', label: 'Genes per genome', type: 'select', options: GENE_CHOICES.map((g) => [g, fmt.int(g)]) },
   { key: 'years', label: 'Years per generation', min: 1, max: 40, step: 1, live: true, show: (v) => fmt.int(v) },
 ];
@@ -579,7 +582,7 @@ function renderLab() {
 
 function sameSettings(params) {
   const want = { ...DEFAULTS, ...params };
-  return ['K', 'F', 'U', 'dfe', 'h', 'repair', 'mode', 'crossovers', 'epistasis', 'competition', 'genes'].every((k) => String(want[k]) === String(S.params[k]));
+  return ['K', 'F', 'U', 'dfe', 'h', 'repair', 'mode', 'crossovers', 'epistasis', 'competition', 'males', 'genes'].every((k) => String(want[k]) === String(S.params[k]));
 }
 
 function onSetting(el, final) {

@@ -39,11 +39,28 @@ test('U = 4 dies out; with 50 young per mother it lives (chapter 7)', () => {
   assert.ok(!fish.extinct && fish.N === fish.params.K);
 });
 
-test('U = 3 dies out; synergy or competition rescue it', () => {
+test('U = 3 dies out; synergy, competition or selection on males rescue it (Lab)', () => {
   const base = runTo({ U: 3 }, 8000);
   assert.ok(base.extinct, `U = 3 lasted ${base.gen}`);
-  for (const extra of [{ epistasis: 2 }, { competition: 1 }]) {
+  for (const extra of [{ epistasis: 2 }, { competition: 1 }, { males: 1 }]) {
     const e = runTo({ U: 3, ...extra }, 8000);
     assert.ok(!e.extinct && e.N === e.params.K, JSON.stringify(extra));
   }
+});
+
+test('U = 5 dies out, also with any one escape; all three together fill every place (chapter 8)', () => {
+  const plain = runTo({ U: 5 }, 1000);
+  assert.ok(plain.extinct && plain.gen < 700, `plain U = 5 lasted ${plain.gen}`);
+  for (const one of [{ competition: 1 }, { epistasis: 1 }, { males: 1 }]) {
+    const e = runTo({ U: 5, ...one }, 3000);
+    assert.ok(e.extinct, `${JSON.stringify(one)} lasted ${e.gen}`);
+  }
+  const all = new Engine({ seed: 'genome', params: { U: 5, competition: 1, epistasis: 1, males: 1 } });
+  let lowest = Infinity;
+  while (all.gen < 3000 && !all.extinct) {
+    all.step();
+    lowest = Math.min(lowest, all.N);
+  }
+  assert.equal(lowest, all.params.K, 'every place filled throughout');
+  assert.ok(all.last.survival > 0.25, `survival ${all.last.survival}`);
 });

@@ -4,7 +4,7 @@ A browser simulation of **mutation load**: a population of 2,000 animals with 5,
 
 **Play it:** https://claude.ai/artifact/YYjZGC4Wt1L4yjzNeoVr4B
 
-The page is one self-contained file (`dist/index.html`). It shows the whole population’s genome as a map (every gene coloured by how many of its copies are broken), charts of survival, damage and genes lost over time, a narrator that explains what is happening, eight Learn chapters with a question to answer before each “Show me”, a Lab with twelve scenarios and live settings, and a Validation tab that sets the simulation against population-genetics theory.
+The page is one self-contained file (`dist/index.html`). It shows the whole population’s genome as a map (every gene coloured by how many of its copies are broken), charts of survival, damage and genes lost over time, a narrator that explains what is happening, nine Learn chapters with a question to answer before each “Show me”, a Lab with fourteen scenarios and live settings, and a Validation tab that sets the simulation against population-genetics theory.
 
 ## What it shows
 
@@ -12,14 +12,15 @@ The page is one self-contained file (`dist/index.html`). It shows the whole popu
 2. **Damage too slight to be seen does pile up**, in genes below the drift barrier (4·N·h·s < 1): they decay into pseudogenes. But by definition each costs little, and damage stops once a gene is broken in everyone.
 3. **Small populations melt down**: drift breaks genes a large population protects (100 adults die out in about 60,000 years in this model).
 4. **Sex rebuilds clean genomes**: clones lose their best class again and again (Muller’s ratchet) and die out within about 50,000 years.
-5. **Mutations win** when the price is more than the young can pay: too many new ones per birth, too few adults, or no sex.
+5. **Mutations win** when the price is more than the young can pay: too many new ones per birth, too few adults, or no sex. This is the **load paradox**: human estimates of U start at about 2, and e^−U says most conceptions should then fail.
+6. **Three escapes lower the price**, each by making a death or a lost mating remove more damage: competition for places (soft selection), synergy (damage that hurts more and more), and selection on males (healthier males father more young, and a damaged male’s lost matings go to other males, so no young go unborn). At U = 5 the plain population dies out within about 14,000 years, and so it does with any one escape at strength 1; with all three it keeps every place filled, and was still at full size after half a million years.
 
 ## The model
 
 - **Genome.** 5,120 genes on 20 chromosomes, two copies each. A copy is intact or broken (one bit). Genes come in families of 32 neighbours that share one effect.
 - **Effects.** A gene broken in both copies costs s of survival, in one copy h·s, with h = 0.25. The 160 family effects are evenly spaced quantiles of a gamma distribution with shape 0.2 and mean 1 %, as estimated for new amino-acid-changing mutations in humans, shuffled along the chromosomes. About half the genes cost less than 0.1 %. Costs multiply across genes (log fitness = −D, D summed over genes), with optional synergy: log fitness = −D − ε·D²/2.
 - **Mutation.** Each gamete gets a Poisson number of hits, mean U/2, on random genes; a hit breaks an intact copy. Repairs (a hit that restores a broken copy) are ten times rarer.
-- **Life cycle.** Every female conceives a Poisson number of young (mean 10) by fathers drawn at random among the males. Each young survives to adulthood with probability e^−D (a random draw), then the survivors take the 2,000 places at random. Nobody picks the parents: selection is only that damaged young die more often. The population size is emergent: if fewer than 2,000 young survive, it shrinks, and it can die out. With competition on, up to twice as many young survive and the healthier win places more often (soft selection).
+- **Life cycle.** Every female conceives a Poisson number of young (mean 10) by fathers drawn at random among the males. Each young survives to adulthood with probability e^−D (a random draw), then the survivors take the 2,000 places at random. Nobody picks the parents: selection is only that damaged young die more often. The population size is emergent: if fewer than 2,000 young survive, it shrinks, and it can die out. With competition on, up to twice as many young survive and the healthier win places more often (soft selection: a weighted lottery, weights w^c). With selection on males on, each young’s father is drawn with probability in proportion to w^m, w being the male’s own survival fitness, so with m = 1 a male whose damage cut his survival by 10 % also wins 10 % fewer matings (drawn with Walker’s alias method).
 - **Meiosis.** 1.5 crossovers per chromosome on average (Poisson), at random places between genes. “Sex without crossing over” passes whole chromosomes; “Clones” copy the mother’s genome.
 - **Time.** 25 years per generation: one million years is 40,000 generations, about three minutes on a laptop.
 - **Start.** Every genome starts perfect.
@@ -45,9 +46,10 @@ Each check is a seeded run of the real simulation set against a prediction from 
 | Damage that hurts more and more lowers the price (synergy 2) | 46.9 % | 46.6 % | ±2.5 points | match |
 | The default genome after a million years: Wright’s forecast | 4,724 broken copies | 4,578 | ±6 % | match |
 | … and the share of young that survive it | 44.5 % | 45.3 % | ±3 points | match |
+| Selection on males lowers the price to e^−U/(1 + m/2) (every gene s = 5 %, m = 2) | 60.7 % | 60.4 % | ±2.5 points | match |
 | Same seed, same run | identical, then different | identical, then different | exact | match |
 
-**14 of 14 match.** The “forecast” sums Wright’s stationary distribution for mutation, repair, selection and drift over all 160 gene families, treating genes as independent.
+**15 of 15 match.** The “forecast” sums Wright’s stationary distribution for mutation, repair, selection and drift over all 160 gene families, treating genes as independent.
 
 ## Simplifications
 
@@ -56,7 +58,8 @@ Each check is a seeded run of the real simulation set against a prediction from 
 - 2,000 adults. Real vertebrate populations are often far larger, which lowers the drift barrier; the Lab goes up to 10,000.
 - Effects are fixed: no gene ever becomes more or less important, there are no beneficial new functions, and a repair simply reverses the damage (standing in for back and compensatory mutations).
 - Families of 32 neighbouring genes share one effect (a computing shortcut that keeps the effect distribution exact with only 160 values).
-- Fitness acts only on survival from birth to adulthood; every adult that wins a place breeds. Generations do not overlap, mating is random, the sexes are equal in number on average, and there is no geography.
+- Fitness acts on survival from birth to adulthood and, with selection on males on, on males’ matings; every female that wins a place breeds. Generations do not overlap, mating is otherwise random, the sexes are equal in number on average, and there is no geography.
+- The three escapes are switches with a strength, not measured values: how strong competition, synergy and selection on males are in real species is still debated.
 - Crossovers have no interference and fall evenly along chromosomes; meiosis uses pools of 256 crossover patterns per chromosome, a quarter redrawn every generation.
 - The theory lines treat genes as independent; linkage makes selection slightly less efficient than that.
 
@@ -89,6 +92,10 @@ Code: `src/sim` (engine, effects, theory, settings), `src/app` (page, charts, ge
 - Haigh J (1978) The accumulation of deleterious genes in a population: Muller’s ratchet. *Theor Popul Biol* 14:251–267.
 - Kondrashov AS (1988) Deleterious mutations and the evolution of sexual reproduction. *Nature* 336:435–440.
 - Kondrashov AS (1995) Contamination of the genome by very slightly deleterious mutations: why have we not died 100 times over? *J Theor Biol* 175:583–594.
+- Wallace B (1975) Hard and soft selection revisited. *Evolution* 29:465–473.
+- Agrawal AF (2001) Sexual selection and the maintenance of sexual reproduction. *Nature* 411:692–695.
+- Siller S (2001) Sexual selection and the maintenance of sex. *Nature* 411:689–692.
+- Whitlock MC, Agrawal AF (2009) Purging the genome with sexual selection: reducing mutation load through selection on males. *Evolution* 63:569–582.
 - Lynch M, Conery J, Bürger R (1995) Mutation accumulation and the extinction of small populations. *Am Nat* 146:489–518.
 - Eyre-Walker A, Keightley PD (2007) The distribution of fitness effects of new mutations. *Nat Rev Genet* 8:610–618.
 - Keightley PD (2012) Rates and fitness consequences of new mutations in humans. *Genetics* 190:295–304.
