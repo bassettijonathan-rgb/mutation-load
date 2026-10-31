@@ -1,0 +1,204 @@
+{
+  "passed": 14,
+  "total": 14,
+  "checks": [
+    {
+      "id": "load",
+      "title": "The price of mutation is e^−U",
+      "runs": [
+        "Every gene severe (s = 5 %)"
+      ],
+      "predicted": "36.8 %",
+      "simulated": "37.2 %",
+      "detail": "",
+      "tolerance": "±2 points",
+      "pass": true,
+      "why": "Haldane (1937) and Muller (1950): at balance every new damaging mutation is removed by one death or failed birth, so with U = 1 new mutation per newborn the share of young that survive their genes settles at e^−1 = 36.8 %.",
+      "source": "Haldane 1937, Am. Nat. 71:337; Muller 1950, Am. J. Hum. Genet. 2:111"
+    },
+    {
+      "id": "loadMild",
+      "title": "The price does not depend on how harmful each gene is",
+      "runs": [
+        "Every gene mild (s = 0.5 %)"
+      ],
+      "predicted": "36.8 %",
+      "simulated": "37.7 %",
+      "detail": "",
+      "tolerance": "±2.5 points",
+      "pass": true,
+      "why": "Ten times milder genes, same share of young lost: a milder mutation lingers longer and so is carried by more of the young before it is removed, and the two effects cancel. (Wright’s distribution, which adds drift, gives 37.8 %.)",
+      "source": "Haldane 1937; Crow 1970, in Biomathematics 1:128"
+    },
+    {
+      "id": "copiesSevere",
+      "title": "Broken copies per genome: U/(h·s)",
+      "runs": [
+        "Every gene severe (s = 5 %)"
+      ],
+      "predicted": "80.0",
+      "simulated": "76.8",
+      "detail": "",
+      "tolerance": "±7 %",
+      "pass": true,
+      "why": "Each broken copy lowers survival by h·s = 1.25 % and so lasts about 1/(h·s) = 80 generations. With one new one per newborn per generation, a genome carries about 80. (Drift trims this a little; Wright’s distribution gives 78.)",
+      "source": "Crow 1970; Kimura & Maruyama 1966, Genetics 54:1337"
+    },
+    {
+      "id": "copiesMild",
+      "title": "Milder genes: more broken copies, as Wright predicts",
+      "runs": [
+        "Every gene mild (s = 0.5 %)"
+      ],
+      "predicted": "684",
+      "simulated": "684",
+      "detail": "",
+      "tolerance": "±7 %",
+      "pass": true,
+      "why": "U/(h·s) would give 800, but at s = 0.5 % drift starts to matter (4N·h·s = 10): by chance some genes are clean in everyone for a while. Wright’s stationary distribution for mutation, selection and drift gives 684.",
+      "source": "Wright 1937, PNAS 23:307"
+    },
+    {
+      "id": "dominance",
+      "title": "More dominant damage: fewer broken copies, same price",
+      "runs": [
+        "Severe genes, half dominant (h = 0.5)"
+      ],
+      "predicted": "40.0",
+      "simulated": "39.2",
+      "detail": "survival of the young 36.6 % (e^−U = 36.8 %)",
+      "tolerance": "±7 %, survival ±2 points",
+      "pass": true,
+      "why": "With h = 0.5 a single broken copy costs twice as much, so it is removed twice as fast: U/(h·s) = 40 copies. The price stays e^−U.",
+      "source": "Crow 1970"
+    },
+    {
+      "id": "persist",
+      "title": "Enough young to pay the price, or extinction",
+      "runs": [
+        "Two damaging mutations per newborn",
+        "1.2 damaging mutations per newborn"
+      ],
+      "predicted": "U = 2 dies out, U = 1.2 lives",
+      "simulated": "U = 2 died out after 163 generations; U = 1.2 lived (survival 30.4 %)",
+      "detail": "",
+      "tolerance": "both outcomes",
+      "pass": true,
+      "why": "Each female has F = 10 young, so at least 2 in 10 must survive for the population to replace itself. With U = 2 only e^−2 = 13.5 % survive at balance; with U = 1.2, 30 %.",
+      "source": "Muller 1950; Kondrashov 1988, Nature 336:435"
+    },
+    {
+      "id": "decay",
+      "title": "Genes nobody needs decay at the mutation rate",
+      "runs": [
+        "Genes that do not matter (s = 0.0001 %), 500 places"
+      ],
+      "predicted": "37.8 %",
+      "simulated": "37.1 %",
+      "detail": "",
+      "tolerance": "±1 point",
+      "pass": true,
+      "why": "With no selection, broken copies just pile up: each intact copy breaks at rate u = 1/10,240 per generation (and is repaired ten times more rarely), so after 5,000 generations 37.8 % of copies are broken, heading for 91 %. This is how pseudogenes form.",
+      "source": "Haldane 1933; Li, Gojobori & Nei 1981, Nature 292:237"
+    },
+    {
+      "id": "neutralRate",
+      "title": "Neutral substitution rate = mutation rate",
+      "runs": [
+        "Genes that do not matter, rare mutations (U = 0.05), 500 places"
+      ],
+      "predicted": "686",
+      "simulated": "703",
+      "detail": "genes broken in every copy, generations 5,000 to 35,000",
+      "tolerance": "±12 %",
+      "pass": true,
+      "why": "Kimura: a new neutral mutation takes over with chance 1/(2N), and 2N·u of them arise each generation, so neutral genes turn over at rate u, whatever the population size.",
+      "source": "Kimura 1968, Nature 217:624"
+    },
+    {
+      "id": "weakRate",
+      "title": "Slightly harmful mutations take over too, more rarely",
+      "runs": [
+        "Slightly harmful genes (s = 0.2 %, h = 0.5), rare mutations, 500 places"
+      ],
+      "predicted": "229",
+      "simulated": "223",
+      "detail": "Kimura’s chance of taking over: 0.31 × the neutral one (4N·h·s = 2)",
+      "tolerance": "±25 % (about 3 standard deviations of chance)",
+      "pass": true,
+      "why": "When 4N·h·s is near 1, drift can carry a harmful mutation all the way: Kimura’s fixation probability gives about a third of the neutral rate here. This is how small populations collect damage.",
+      "source": "Kimura 1962, Genetics 47:713; Ohta 1973, Nature 246:96"
+    },
+    {
+      "id": "ratchet",
+      "title": "Without sex the best genomes are lost for good",
+      "runs": [
+        "Clones: severe genes, U = 0.1, no sex",
+        "Same, with sex"
+      ],
+      "predicted": "the clones’ fewest broken copies climbs; with sex it stays near 0 (Haigh: 0.67 genomes in the best class)",
+      "simulated": "clones: fewest 3 → 54, survival 47.8 %; sex: fewest 1 → 0, survival 89.7 %",
+      "detail": "generations 300 to 3,000",
+      "tolerance": "clones gain at least 20, sex ends at 3 or fewer",
+      "pass": true,
+      "why": "Muller’s ratchet: in clones the least damaged genomes, only about N·e^−U/(h·s) of them, are lost by chance and cannot be rebuilt except by rare repairs. With sex, recombination keeps making clean genomes from damaged parents.",
+      "source": "Muller 1964, Mutat. Res. 1:2; Felsenstein 1974, Genetics 78:737; Haigh 1978"
+    },
+    {
+      "id": "synergy",
+      "title": "Damage that hurts more and more lowers the price",
+      "runs": [
+        "Severe genes, damage that hurts more and more (synergy 2)"
+      ],
+      "predicted": "46.9 %",
+      "simulated": "46.6 %",
+      "detail": "",
+      "tolerance": "±2.5 points",
+      "pass": true,
+      "why": "With synergy each death removes more broken copies than average, so fewer deaths are needed: Kimura & Maruyama’s balance for a Poisson number of mutations gives 46.9 %, above e^−U = 36.8 %.",
+      "source": "Kimura & Maruyama 1966; Kondrashov 1988; Charlesworth 1990, Genet. Res. 55:199"
+    },
+    {
+      "id": "genome",
+      "title": "The default genome after a million years: Wright’s forecast",
+      "runs": [
+        "The default population, one million years (40,000 generations)"
+      ],
+      "predicted": "4,724",
+      "simulated": "4,578",
+      "detail": "broken copies per genome by effect, simulated (forecast): severe 38 (39), mild 367 (376), slight 1,326 (1,411), tiny 2,868 (2,898)",
+      "tolerance": "±6 %",
+      "pass": true,
+      "why": "Summing Wright’s distribution over all 5,120 genes forecasts the long-run genome: severe genes stay almost clean, while genes too weak for selection to see (4N·h·s below 1) end up mostly broken. After 40,000 generations the simulation is within a few percent of it.",
+      "source": "Wright 1937; Kimura, Maruyama & Crow 1963, Genetics 48:1303"
+    },
+    {
+      "id": "genomeSurvival",
+      "title": "… and the share of young that survive it",
+      "runs": [
+        "The default population, one million years (40,000 generations)"
+      ],
+      "predicted": "44.5 %",
+      "simulated": "45.3 %",
+      "detail": "",
+      "tolerance": "±3 points",
+      "pass": true,
+      "why": "The load now has two parts: about U from genes under selection, plus the cost of weak genes that drift has broken in everyone. Forecast and simulation agree, and the population stays above the 20 % it needs.",
+      "source": "Kimura, Maruyama & Crow 1963; Lynch, Conery & Bürger 1995, Am. Nat. 146:489"
+    },
+    {
+      "id": "repeat",
+      "title": "Same seed, same run",
+      "runs": [
+        "The default population twice with one seed, once with another (500 generations)"
+      ],
+      "predicted": "identical, then different",
+      "simulated": "25b0cf7d · 25b0cf7d · 7cbb50d",
+      "detail": "fingerprints of every genome after 500 generations",
+      "tolerance": "exact",
+      "pass": true,
+      "why": "Every random draw comes from one seeded generator, so a run can be repeated exactly, here, in Node or in CI.",
+      "source": ""
+    }
+  ]
+}

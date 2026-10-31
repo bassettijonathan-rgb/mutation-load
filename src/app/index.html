@@ -1,0 +1,92 @@
+<title>Mutation Load</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Why harmful mutations don't take over: a population of 2,000 with 5,120 genes, one new damaging mutation per newborn, and a million years to watch.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/*__CSS__*/
+</style>
+
+<div class="app" id="app">
+  <header class="masthead">
+    <h1>Why mutations don’t win</h1>
+    <p>Every newborn gets new damage to its genes. Watch 2,000 animals with 5,120 genes each, over a million years, and see why the damage doesn’t take over.</p>
+  </header>
+
+  <div class="bar" id="bar">
+    <button type="button" class="icon-btn play" id="play" aria-label="Play"></button>
+    <button type="button" class="icon-btn" id="step" aria-label="One generation" title="One generation"></button>
+    <div class="clock" aria-live="off">
+      <span class="age" id="clock-years">0 years</span>
+      <span class="unit" id="clock-gen">generation 0</span>
+    </div>
+    <label class="speed"><span class="sr">Speed</span><select id="speed" title="Speed"></select></label>
+    <label class="speed jump"><span class="sr">Run to</span><select id="jump" title="Run to"></select></label>
+    <button type="button" class="icon-btn" id="restart" aria-label="Start again" title="Start again"></button>
+  </div>
+
+  <div class="cols">
+    <main class="main-col" id="main-col">
+      <section class="stage" id="stage" aria-label="The population now">
+        <div class="error" id="error" role="alert" hidden></div>
+        <div class="readouts" id="readouts"></div>
+        <p class="narrator" id="narrator" aria-live="polite"></p>
+        <div class="map-head">
+          <h2 class="map-title">The genome of the whole population</h2>
+          <div class="chips" id="map-views" role="group" aria-label="Arrange the genes">
+            <button type="button" class="chip" data-view="effect" aria-pressed="true">By effect</button>
+            <button type="button" class="chip" data-view="chrom" aria-pressed="false">Along chromosomes</button>
+          </div>
+        </div>
+        <div class="map-wrap">
+          <canvas id="map" role="img" aria-label="Every gene as a square, coloured by the share of its copies that are broken in the population"></canvas>
+          <div class="toast" id="toast" role="status" hidden></div>
+        </div>
+        <div class="map-legend" id="map-legend"></div>
+        <section class="charts-home" id="charts-home"></section>
+      </section>
+    </main>
+
+    <aside class="side" id="side">
+      <nav class="tabs" id="tabs" role="tablist" aria-label="Sections">
+        <button type="button" role="tab" data-tab="watch">Charts</button>
+        <button type="button" role="tab" data-tab="learn">Learn</button>
+        <button type="button" role="tab" data-tab="lab">Lab</button>
+        <button type="button" role="tab" data-tab="check">Validation</button>
+      </nav>
+      <section class="panel" data-panel="watch" id="panel-watch" aria-label="Charts">
+        <div id="charts-box">
+          <button type="button" class="btn ghost small" id="back-to-lesson" hidden>← Back to the lesson</button>
+          <div class="chart-tools">
+            <div class="chips" role="group" aria-label="Time axis">
+              <button type="button" class="chip" id="time-lin" aria-pressed="true">Linear time</button>
+              <button type="button" class="chip" id="time-log" aria-pressed="false">Log time</button>
+            </div>
+            <button type="button" class="chip" id="ghost-btn">Keep as grey line</button>
+          </div>
+          <canvas id="charts" role="img" aria-label="Charts of the share of young that survive, broken copies per genome, genes broken in everyone, and adults, through time"></canvas>
+          <p class="chart-caption" id="chart-caption"></p>
+        </div>
+      </section>
+      <section class="panel" data-panel="learn" id="panel-learn" aria-label="Learn"></section>
+      <section class="panel" data-panel="lab" id="panel-lab" aria-label="Lab"></section>
+      <section class="panel" data-panel="check" id="panel-check" aria-label="Validation"></section>
+    </aside>
+  </div>
+
+  <footer class="foot">
+    A teaching model, not a measurement: genes are simply intact or broken, and the population is far smaller than most real species.
+    <a href="https://github.com/bassettijonathan-rgb/mutation-load" target="_blank" rel="noopener">Code and notes</a>
+  </footer>
+</div>
+
+<div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Explanation" hidden>
+  <button type="button" class="sheet-close" id="sheet-close" aria-label="Close">×</button>
+  <div id="sheet-body"></div>
+</div>
+
+<script>
+/*__JS__*/
+</script>
